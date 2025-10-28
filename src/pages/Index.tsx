@@ -9,9 +9,10 @@ type Section = 'dashboard' | 'card' | 'balance' | 'referral' | 'withdraw';
 
 export default function Index() {
   const [activeSection, setActiveSection] = useState<Section>('dashboard');
-  const [balance, setBalance] = useState(25000);
+  const [balance, setBalance] = useState(0);
   const [cardNumber, setCardNumber] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [referralLink] = useState('https://t.me/monvceyxccvbot?start=ref_' + Math.random().toString(36).substr(2, 9));
 
   const handleCardFormat = () => {
     if (cardNumber.length >= 16) {
@@ -159,46 +160,36 @@ export default function Index() {
             <Card className="p-8 bg-gradient-to-br from-primary via-accent to-secondary border-0 relative overflow-hidden">
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-20" />
               <div className="relative">
-                <p className="text-white/80 text-sm mb-2">Доступно</p>
+                <p className="text-white/80 text-sm mb-2">Ваш баланс</p>
                 <h3 className="text-5xl font-bold text-white mb-1">{balance.toLocaleString('ru-RU')} ₽</h3>
-                <Badge className="bg-white/20 text-white border-0 mt-3">
-                  <Icon name="TrendingUp" size={14} className="mr-1" />
-                  +12.5% за месяц
-                </Badge>
+                {balance === 0 && (
+                  <p className="text-white/70 text-sm mt-3">
+                    Оформите карту и получите первый бонус! 💰
+                  </p>
+                )}
               </div>
             </Card>
 
-            <div className="grid gap-4">
-              <Card className="p-5 bg-card/80 backdrop-blur border-border/50 hover:border-primary/50 transition-all cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/20 rounded-xl">
-                      <Icon name="ArrowDownLeft" size={20} className="text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-semibold">Последнее пополнение</p>
-                      <p className="text-sm text-muted-foreground">Сегодня, 14:32</p>
-                    </div>
-                  </div>
-                  <p className="text-lg font-bold text-primary">+5,000 ₽</p>
-                </div>
-              </Card>
-
-              <Card className="p-5 bg-card/80 backdrop-blur border-border/50 hover:border-secondary/50 transition-all cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-secondary/20 rounded-xl">
-                      <Icon name="ArrowUpRight" size={20} className="text-secondary" />
-                    </div>
-                    <div>
-                      <p className="font-semibold">Последний вывод</p>
-                      <p className="text-sm text-muted-foreground">Вчера, 18:45</p>
-                    </div>
-                  </div>
-                  <p className="text-lg font-bold text-secondary">-3,500 ₽</p>
-                </div>
-              </Card>
-            </div>
+            <Card className="p-6 bg-card/80 backdrop-blur border-border/50">
+              <div className="flex items-center gap-3 mb-4">
+                <Icon name="Info" size={20} className="text-primary" />
+                <h3 className="font-semibold">Как начислить баланс?</h3>
+              </div>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <Icon name="Check" size={16} className="text-primary mt-0.5 flex-shrink-0" />
+                  <span>Оформите Альфа-Карту по ссылке в разделе "Карта" и получите <span className="text-primary font-semibold">500 ₽</span></span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Icon name="Check" size={16} className="text-accent mt-0.5 flex-shrink-0" />
+                  <span>Пригласите друзей через реферальную программу — <span className="text-accent font-semibold">200 ₽</span> за каждого</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Icon name="AlertCircle" size={16} className="text-secondary mt-0.5 flex-shrink-0" />
+                  <span className="text-secondary">Бонусы начисляются только после выполнения всех условий</span>
+                </li>
+              </ul>
+            </Card>
           </div>
         );
 
@@ -217,51 +208,93 @@ export default function Index() {
 
             <Card className="p-6 bg-gradient-to-br from-accent/20 to-primary/20 border-accent/30">
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Ваш код</p>
-                    <p className="text-2xl font-bold text-accent">REF2024XYZ</p>
+                <div className="text-center mb-4">
+                  <div className="inline-block p-3 bg-gradient-to-br from-accent to-primary rounded-2xl mb-3">
+                    <Icon name="Gift" size={32} className="text-white" />
                   </div>
-                  <Button variant="outline" className="border-accent/50 hover:bg-accent/20">
-                    <Icon name="Copy" size={18} className="mr-2" />
-                    Копировать
-                  </Button>
+                  <h3 className="text-2xl font-bold mb-1">Зарабатывайте 200 ₽</h3>
+                  <p className="text-sm text-muted-foreground">За каждого друга, который оформит карту</p>
                 </div>
+
+                <div className="bg-card/50 p-4 rounded-xl">
+                  <p className="text-xs text-muted-foreground mb-2">Ваша реферальная ссылка:</p>
+                  <div className="flex gap-2">
+                    <Input 
+                      value={referralLink} 
+                      readOnly 
+                      className="bg-background/50 text-xs"
+                    />
+                    <Button 
+                      variant="outline" 
+                      className="border-accent/50 hover:bg-accent/20 flex-shrink-0"
+                      onClick={() => {
+                        navigator.clipboard.writeText(referralLink);
+                        alert('Ссылка скопирована!');
+                      }}
+                    >
+                      <Icon name="Copy" size={18} />
+                    </Button>
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={() => window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Получи 1000₽ за оформление Альфа-Карты! 🎁')}`, '_blank')}
+                  className="w-full bg-gradient-to-r from-accent via-primary to-secondary hover:opacity-90 transition-all text-white font-semibold py-6 rounded-xl"
+                >
+                  <Icon name="Share2" size={20} className="mr-2" />
+                  Поделиться в Telegram
+                </Button>
               </div>
             </Card>
 
             <div className="grid grid-cols-2 gap-4">
               <Card className="p-5 text-center bg-card/80 backdrop-blur">
                 <Icon name="UserPlus" size={32} className="text-primary mx-auto mb-2" />
-                <p className="text-3xl font-bold">47</p>
+                <p className="text-3xl font-bold">0</p>
                 <p className="text-sm text-muted-foreground">Рефералов</p>
               </Card>
               <Card className="p-5 text-center bg-card/80 backdrop-blur">
                 <Icon name="DollarSign" size={32} className="text-accent mx-auto mb-2" />
-                <p className="text-3xl font-bold">12,350 ₽</p>
+                <p className="text-3xl font-bold">0 ₽</p>
                 <p className="text-sm text-muted-foreground">Заработано</p>
               </Card>
             </div>
 
             <Card className="p-5 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Icon name="Gift" size={20} className="text-primary" />
-                Условия программы
+                <Icon name="AlertCircle" size={20} className="text-primary" />
+                Условия начисления
               </h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <Icon name="Check" size={16} className="text-primary mt-0.5" />
-                  <span>15% с каждого пополнения реферала</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Icon name="Check" size={16} className="text-primary mt-0.5" />
-                  <span>Бонус 500₽ за первого реферала</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Icon name="Check" size={16} className="text-primary mt-0.5" />
-                  <span>Безлимитное количество рефералов</span>
-                </li>
-              </ul>
+              <div className="space-y-3">
+                <div className="bg-accent/10 p-3 rounded-lg border border-accent/30">
+                  <p className="text-accent font-bold text-lg mb-1">200 ₽ за реферала</p>
+                  <p className="text-xs text-muted-foreground">Начисляется автоматически</p>
+                </div>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <Icon name="Check" size={16} className="text-primary mt-0.5 flex-shrink-0" />
+                    <span>Друг переходит по вашей ссылке</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Icon name="Check" size={16} className="text-primary mt-0.5 flex-shrink-0" />
+                    <span>Оформляет Альфа-Карту</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Icon name="Check" size={16} className="text-primary mt-0.5 flex-shrink-0" />
+                    <span>Выполняет все условия (активация + покупка от 200₽)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Icon name="Zap" size={16} className="text-accent mt-0.5 flex-shrink-0" />
+                    <span className="text-accent font-semibold">Вам автоматически начисляется 200₽ на баланс</span>
+                  </li>
+                </ul>
+                <div className="bg-secondary/10 p-3 rounded-lg border border-secondary/30 mt-3">
+                  <p className="text-xs text-secondary flex items-start gap-2">
+                    <Icon name="AlertCircle" size={14} className="mt-0.5 flex-shrink-0" />
+                    <span>Без выполнения условий бонус не начисляется</span>
+                  </p>
+                </div>
+              </div>
             </Card>
           </div>
         );
