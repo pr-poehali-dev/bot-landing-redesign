@@ -5,14 +5,27 @@ import Icon from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
-type Section = 'dashboard' | 'card' | 'balance' | 'referral' | 'withdraw';
+type Section = 'dashboard' | 'card' | 'balance' | 'referral' | 'withdraw' | 'support' | 'donate' | 'admin';
+
+type WithdrawRequest = {
+  id: string;
+  phone: string;
+  bank: string;
+  amount: number;
+  status: 'pending' | 'approved' | 'rejected';
+  date: string;
+};
 
 export default function Index() {
   const [activeSection, setActiveSection] = useState<Section>('dashboard');
   const [balance, setBalance] = useState(0);
   const [cardNumber, setCardNumber] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawPhone, setWithdrawPhone] = useState('');
+  const [withdrawBank, setWithdrawBank] = useState('СПБ');
   const [referralLink] = useState('https://t.me/monvceyxccvbot?start=ref_' + Math.random().toString(36).substr(2, 9));
+  const [withdrawRequests, setWithdrawRequests] = useState<WithdrawRequest[]>([]);
+  const [showAdminButton, setShowAdminButton] = useState(false);
 
   const handleCardFormat = () => {
     if (cardNumber.length >= 16) {
@@ -23,12 +36,41 @@ export default function Index() {
 
   const handleWithdraw = () => {
     const amount = parseFloat(withdrawAmount);
-    if (amount > 0 && amount <= balance) {
-      setBalance(balance - amount);
-      alert(`Заявка на вывод ${amount}₽ принята!`);
+    if (amount > 0 && amount <= balance && withdrawPhone && withdrawBank) {
+      const newRequest: WithdrawRequest = {
+        id: Date.now().toString(),
+        phone: withdrawPhone,
+        bank: withdrawBank,
+        amount: amount,
+        status: 'pending',
+        date: new Date().toLocaleString('ru-RU')
+      };
+      setWithdrawRequests([newRequest, ...withdrawRequests]);
+      alert(`Заявка на вывод ${amount}₽ отправлена на модерацию!`);
       setWithdrawAmount('');
+      setWithdrawPhone('');
+    } else if (!withdrawPhone) {
+      alert('Укажите номер телефона!');
     }
   };
+
+  const handleApproveWithdraw = (id: string) => {
+    setWithdrawRequests(withdrawRequests.map(req => 
+      req.id === id ? { ...req, status: 'approved' as const } : req
+    ));
+    const request = withdrawRequests.find(r => r.id === id);
+    if (request) {
+      setBalance(balance - request.amount);
+      alert('Заявка одобрена!');
+    }
+  };
+
+  const handleRejectWithdraw = (id: string) => {
+    setWithdrawRequests(withdrawRequests.map(req => 
+      req.id === id ? { ...req, status: 'rejected' as const } : req
+    ));
+    alert('Заявка отклонена!');
+  };}
 
   const renderContent = () => {
     switch (activeSection) {
@@ -299,6 +341,206 @@ export default function Index() {
           </div>
         );
 
+      case 'support':
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <div className="text-center">
+              <div className="inline-block p-4 bg-gradient-to-br from-primary to-accent rounded-3xl mb-4">
+                <Icon name="Headphones" size={48} className="text-white" />
+              </div>
+              <h2 className="text-3xl font-bold mb-2">Техподдержка</h2>
+              <p className="text-muted-foreground">Мы всегда на связи!</p>
+            </div>
+
+            <Card className="p-6 bg-gradient-to-br from-primary/20 to-accent/20 border-primary/30">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <Icon name="MessageCircle" size={20} className="text-primary" />
+                Свяжитесь с нами
+              </h3>
+              <div className="space-y-3">
+                <Button 
+                  onClick={() => window.open('https://t.me/Alfa_Bank778', '_blank')}
+                  className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-semibold py-6 rounded-xl"
+                >
+                  <Icon name="Send" size={20} className="mr-2" />
+                  Написать в Telegram
+                </Button>
+                <p className="text-center text-sm text-muted-foreground">
+                  Ответим в течение 5 минут
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-5 bg-card/80 backdrop-blur">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Icon name="HelpCircle" size={20} className="text-accent" />
+                Частые вопросы
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="font-semibold mb-1">Когда придут деньги?</p>
+                  <p className="text-muted-foreground">Вывод обрабатывается до 24 часов</p>
+                </div>
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="font-semibold mb-1">Как получить реферальный бонус?</p>
+                  <p className="text-muted-foreground">Друг должен оформить карту и выполнить все условия</p>
+                </div>
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="font-semibold mb-1">Минимальная сумма вывода?</p>
+                  <p className="text-muted-foreground">100 рублей</p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        );
+
+      case 'donate':
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <div className="text-center">
+              <div className="inline-block p-4 bg-gradient-to-br from-accent to-secondary rounded-3xl mb-4">
+                <Icon name="Heart" size={48} className="text-white" />
+              </div>
+              <h2 className="text-3xl font-bold mb-2">Поддержать проект</h2>
+              <p className="text-muted-foreground">Ваша поддержка важна для нас! ❤️</p>
+            </div>
+
+            <Card className="p-6 bg-gradient-to-br from-accent/20 to-secondary/20 border-accent/30">
+              <div className="text-center space-y-4">
+                <div className="inline-block p-3 bg-gradient-to-br from-accent to-primary rounded-2xl mb-2">
+                  <Icon name="DollarSign" size={32} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Реквизиты для доната:</p>
+                  <div className="bg-card/50 p-4 rounded-xl space-y-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Номер телефона</p>
+                      <p className="text-xl font-bold text-accent">8 906 989 22 67</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Банк</p>
+                      <p className="text-lg font-semibold">Озон Банк</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={() => {
+                    navigator.clipboard.writeText('89069892267');
+                    alert('Номер скопирован в буфер обмена!');
+                  }}
+                  variant="outline"
+                  className="w-full border-accent/50 hover:bg-accent/20"
+                >
+                  <Icon name="Copy" size={18} className="mr-2" />
+                  Скопировать номер
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="p-5 bg-card/80 backdrop-blur">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Icon name="Sparkles" size={20} className="text-accent" />
+                Зачем донатить?
+              </h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <Icon name="Check" size={16} className="text-accent mt-0.5 flex-shrink-0" />
+                  <span>Поддержка работы сервиса</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Icon name="Check" size={16} className="text-accent mt-0.5 flex-shrink-0" />
+                  <span>Развитие новых функций</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Icon name="Check" size={16} className="text-accent mt-0.5 flex-shrink-0" />
+                  <span>Быстрая техподдержка</span>
+                </li>
+              </ul>
+            </Card>
+          </div>
+        );
+
+      case 'admin':
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-destructive to-primary rounded-2xl">
+                <Icon name="ShieldCheck" size={28} className="text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">Админ-панель</h2>
+                <p className="text-muted-foreground">Управление заявками на вывод</p>
+              </div>
+            </div>
+
+            {withdrawRequests.length === 0 ? (
+              <Card className="p-8 text-center bg-card/80 backdrop-blur">
+                <Icon name="Inbox" size={48} className="text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">Нет новых заявок на вывод</p>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {withdrawRequests.map((request) => (
+                  <Card key={request.id} className={`p-5 ${
+                    request.status === 'approved' ? 'bg-primary/10 border-primary/30' :
+                    request.status === 'rejected' ? 'bg-destructive/10 border-destructive/30' :
+                    'bg-card/80 backdrop-blur border-accent/30'
+                  }`}>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-lg">{request.amount.toLocaleString('ru-RU')} ₽</p>
+                          <p className="text-xs text-muted-foreground">{request.date}</p>
+                        </div>
+                        {request.status === 'pending' && (
+                          <Badge className="bg-accent/20 text-accent border-0">На модерации</Badge>
+                        )}
+                        {request.status === 'approved' && (
+                          <Badge className="bg-primary/20 text-primary border-0">Одобрено</Badge>
+                        )}
+                        {request.status === 'rejected' && (
+                          <Badge className="bg-destructive/20 text-destructive border-0">Отклонено</Badge>
+                        )}
+                      </div>
+
+                      <div className="bg-muted/50 p-3 rounded-lg space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Номер телефона:</span>
+                          <span className="font-semibold">{request.phone}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Банк:</span>
+                          <span className="font-semibold">{request.bank}</span>
+                        </div>
+                      </div>
+
+                      {request.status === 'pending' && (
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            onClick={() => handleApproveWithdraw(request.id)}
+                            className="bg-primary hover:bg-primary/90 text-white"
+                          >
+                            <Icon name="Check" size={18} className="mr-2" />
+                            Одобрить
+                          </Button>
+                          <Button
+                            onClick={() => handleRejectWithdraw(request.id)}
+                            variant="destructive"
+                          >
+                            <Icon name="X" size={18} className="mr-2" />
+                            Отклонить
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+
       case 'withdraw':
         return (
           <div className="space-y-6 animate-fade-in">
@@ -358,13 +600,41 @@ export default function Index() {
                 </Button>
                 </div>
 
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Номер телефона СПБ</label>
+                  <Input
+                    type="tel"
+                    placeholder="89069892267"
+                    value={withdrawPhone}
+                    onChange={(e) => setWithdrawPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                    className="bg-background/50 border-secondary/30"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Банк для вывода</label>
+                  <select
+                    value={withdrawBank}
+                    onChange={(e) => setWithdrawBank(e.target.value)}
+                    className="w-full p-3 bg-background/50 border border-secondary/30 rounded-lg text-foreground"
+                  >
+                    <option value="СПБ">СПБ</option>
+                    <option value="Сбербанк">Сбербанк</option>
+                    <option value="Тинькофф">Тинькофф</option>
+                    <option value="Альфа-Банк">Альфа-Банк</option>
+                    <option value="ВТБ">ВТБ</option>
+                    <option value="Озон Банк">Озон Банк</option>
+                    <option value="Другой">Другой</option>
+                  </select>
+                </div>
+
                 <Button 
                   onClick={handleWithdraw} 
                   className="w-full bg-gradient-to-r from-secondary via-primary to-accent hover:opacity-90 transition-all text-white font-semibold py-6 rounded-xl text-lg"
-                  disabled={!withdrawAmount || parseFloat(withdrawAmount) <= 0}
+                  disabled={!withdrawAmount || parseFloat(withdrawAmount) <= 0 || !withdrawPhone}
                 >
                   <Icon name="Send" size={20} className="mr-2" />
-                  Вывести средства
+                  Отправить заявку
                 </Button>
               </div>
             </Card>
@@ -538,14 +808,55 @@ export default function Index() {
             </Button>
           </div>
 
+          <div className="grid grid-cols-3 gap-2 mt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setActiveSection('support')}
+            >
+              <Icon name="Headphones" size={16} className="mr-1" />
+              Поддержка
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setActiveSection('donate')}
+            >
+              <Icon name="Heart" size={16} className="mr-1" />
+              Донат
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setActiveSection('dashboard')}
+            >
+              <Icon name="Home" size={16} className="mr-1" />
+              Главная
+            </Button>
+          </div>
+
+          {showAdminButton && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full mt-2 border-destructive/50 text-destructive hover:bg-destructive/10"
+              onClick={() => setActiveSection('admin')}
+            >
+              <Icon name="ShieldCheck" size={16} className="mr-1" />
+              Админ-панель
+            </Button>
+          )}
+
           <Button
             variant="ghost"
             size="sm"
-            className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => setActiveSection('dashboard')}
+            className="w-full mt-1 text-xs text-muted-foreground/50"
+            onClick={() => setShowAdminButton(!showAdminButton)}
           >
-            <Icon name="Home" size={16} className="mr-1" />
-            На главную
+            {showAdminButton ? '👁️' : '•'}
           </Button>
         </div>
       </div>
