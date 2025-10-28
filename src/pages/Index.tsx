@@ -70,7 +70,7 @@ export default function Index() {
       req.id === id ? { ...req, status: 'rejected' as const } : req
     ));
     alert('Заявка отклонена!');
-  };}
+  };
 
   const renderContent = () => {
     switch (activeSection) {
