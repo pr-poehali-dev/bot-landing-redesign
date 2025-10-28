@@ -95,6 +95,7 @@ export default function Index() {
             withdrawRequests={withdrawRequests}
             handleApproveWithdraw={handleApproveWithdraw}
             handleRejectWithdraw={handleRejectWithdraw}
+            onBack={() => setActiveSection('dashboard')}
           />
         );
 
